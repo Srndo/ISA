@@ -1,25 +1,9 @@
-#include<stdio.h> 
-#include<string.h>    
-#include<unistd.h>
-#include<sys/socket.h>
-#include<arpa/inet.h> 
-#include<netinet/in.h>
-#include<netdb.h>
+
+#include "functions.h"
 
 #define BUFFER 1024
 #define DEBUG
 
-void help(){
-  printf("-q <IP|hostname>, povinný argument\n");
-  printf("-w <IP|hostname WHOIS serveru>, který bude dotazován, povinný argument\n");
-  printf("-d <IP|hostname DNS serveru>, který bude dotazován, nepovinný argument přičemž implicitně se bere 1.1.1.1\n");
-}
-
-int err_arguments(){
-  fprintf(stderr,"Bad usage of arguments\n");
-  help();
-  return 1;
-}
 
 int main(int argc, char const *argv[]) {
   int sock, msg_size, i;
@@ -36,6 +20,7 @@ int main(int argc, char const *argv[]) {
   char client[100], whois_server[100], dns_server[100];
   int qflag = 0;
   int wflag = 0;
+  int dflag = 0;
   
   if(argc < 5 || argc > 7){
     return err_arguments();    
@@ -56,10 +41,11 @@ int main(int argc, char const *argv[]) {
       case 'd':
         printf("option: %c | %s\n", opt, optarg);
         strcpy(dns_server, optarg);
+        dflag++;
         break;
       default:
         err_arguments();
-        return(1);
+        return 1;
     }
   } 
   
@@ -70,32 +56,33 @@ int main(int argc, char const *argv[]) {
   memset(&server,0,sizeof(server)); // erase the server structure
   memset(&local,0,sizeof(local));   // erase the local address structure
 
-   if (/*DNS argument*/) {
-     if((servent = gethostbyname(/*server name*/)) == NULL)
-      errx(1, "gethostbyname() failed\n");
+   if (isip(client) != 0) {
+     if((servent = gethostbyname(client)) == NULL)
+      return error_exit(1, "gethostbyname() failed");
      
       // copy the first parameter to the server.sin_addr structure
       memcpy(&server.sin_addr,servent->h_addr,servent->h_length); 
    }
    else{
-     server.sin_addr.s_addr = inet_addr(/*server ip*/);
+     server.sin_addr.s_addr = inet_addr(client);
    }
    server.sin_family = AF_INET;
    server.sin_port = htons(/*server port number*/);
    
    if((sock = socket(AF_INET, SOCK_STREAM, 0)) == -1) //create client Socket
-    err(1,"socket() failed\n");
+    return error_exit(1,"socket() failed");
   
   #ifdef DEBUG
     printf("* Socket successfully created\n");
   #endif
+  
   uid = getuid();
-  uname = getpwuid (uid);
+  uname = getpwuid(uid);
   
   // connect to the remote server
   // client port and IP address are assigned automatically by the operating system
   if (connect(sock, (struct sockaddr *)&server, sizeof(server)) == -1)
-    err(1,"connect() failed");
+    return error_exit(1,"connect() failed");
   
   // obtain the local IP address and port using getsockname()
   len = sizeof(local);

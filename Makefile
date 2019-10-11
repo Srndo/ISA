@@ -1,9 +1,8 @@
-PRJ=xsesta06
+SRC=main.c functions.c
+BIN=xsesta06
 CC=gcc
 #CC=g++
-CFLAGS= -pedantic -std=c99 -g -lpcap #++11
+CFLAGS= -Wall -pedantic -std=c99 -g -lm -lpcap #++11
 
-all: $(PRJ)
-
-$(PRJ): $(PRJ).c
-	        $(CC) $(PRJ).c $(CFLAGS) -o $(PRJ)
+$(BIN): $(SRC)
+	        $(CC) $(SRC) $(CFLAGS) -o $(BIN)
