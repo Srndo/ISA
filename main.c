@@ -61,13 +61,13 @@ int main(int argc, char const *argv[]) {
       return error_exit(1, "gethostbyname() failed");
      
       // copy the first parameter to the server.sin_addr structure
-      memcpy(&server.sin_addr,servent->h_addr,servent->h_length); 
+      memcpy(&server.sin_addr,servent->h_addr_list[0],servent->h_length); 
    }
    else{
      server.sin_addr.s_addr = inet_addr(client);
    }
    server.sin_family = AF_INET;
-   server.sin_port = htons(/*server port number*/);
+   server.sin_port = htons(43);
    
    if((sock = socket(AF_INET, SOCK_STREAM, 0)) == -1) //create client Socket
     return error_exit(1,"socket() failed");
@@ -87,7 +87,7 @@ int main(int argc, char const *argv[]) {
   // obtain the local IP address and port using getsockname()
   len = sizeof(local);
   if (getsockname(sock,(struct sockaddr *) &local, &len) == -1)
-    err(1,"getsockname() failed");
+    return error_exit(1,"getsockname() failed");
     
   #ifdef DEBUG
     printf("* Client successfully connected from %s, port %d (%d) to %s, port %d (%d)\n", inet_ntoa(local.sin_addr),ntohs(local.sin_port),local.sin_port,inet_ntoa(server.sin_addr),ntohs(server.sin_port), server.sin_port);
@@ -97,11 +97,11 @@ int main(int argc, char const *argv[]) {
   
   i = write(sock,buffer,strlen(uname->pw_name));
   if (i == -1){
-    err(1,"initial write() failed");
+    return error_exit(1,"initial write() failed");
   }
 
   if ((i = read(sock,buffer,BUFFER)) == -1){  // read an initial string
-    err(1,"initial read() failed");
+    return error_exit(1,"initial read() failed");
   } else {
     printf("%.*s\n",i,buffer);
   }
@@ -113,23 +113,31 @@ int main(int argc, char const *argv[]) {
   { 
     i = write(sock,buffer,msg_size);             // send data to the server
     if (i == -1)                                 // check if data was sent correctly
-      err(1,"write() failed");
+      return error_exit(1,"write() failed");
     else if (i != msg_size)
-      err(1,"write(): buffer written partially");
+      return error_exit(1,"write(): buffer written partially");
     
     if ((i = read(sock,buffer, BUFFER)) == -1)   // read the answer from the server
-      err(1,"read() failed");
+      return error_exit(1,"read() failed");
     else if (i > 0)
       printf("%.*s",i,buffer);                   // print the answer
   } 
   // reading data until end-of-file (CTRL-D)
 
   if (msg_size == -1)
-    err(1,"reading failed");
+    return error_exit(1,"reading failed");
   close(sock);
   
   #ifdef DEBUG
     printf("* Closing the client socket ...\n");
   #endif
+  
   return 0;
 }
+
+/*
+printf("HERE\n");
+return 0;
+#ifdef X
+#endif
+*/
