@@ -43,6 +43,7 @@ int main(int argc, char const *argv[]) {
         strcpy(dns_server, optarg);
         dflag++;
         break;
+      case '?':
       default:
         err_arguments();
         return 1;
@@ -56,15 +57,15 @@ int main(int argc, char const *argv[]) {
   memset(&server,0,sizeof(server)); // erase the server structure
   memset(&local,0,sizeof(local));   // erase the local address structure
 
-   if (isip(client) != 0) {
-     if((servent = gethostbyname(client)) == NULL)
+   if (isip(whois_server) != 0) {
+     if((servent = gethostbyname(whois_server)) == NULL)
       return error_exit(1, "gethostbyname() failed");
      
       // copy the first parameter to the server.sin_addr structure
       memcpy(&server.sin_addr,servent->h_addr_list[0],servent->h_length); 
    }
    else{
-     server.sin_addr.s_addr = inet_addr(client);
+     server.sin_addr.s_addr = inet_addr(whois_server);
    }
    server.sin_family = AF_INET;
    server.sin_port = htons(43);
@@ -94,7 +95,7 @@ int main(int argc, char const *argv[]) {
   #endif
   
   strcpy(buffer,uname->pw_name);  // send a login name to the server
-  
+  strcat(buffer, "-B");
   i = write(sock,buffer,strlen(uname->pw_name));
   if (i == -1){
     return error_exit(1,"initial write() failed");
