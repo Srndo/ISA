@@ -22,7 +22,39 @@ int err_arguments(){
   return 1;
 }
 
-int error_exit(int code, char *str){
+int error_exit(int code, std::string str){
   fprintf(stderr, "%s\n",str);
   return code;
+}
+
+int DnsLookup(char *hostname, char *ip){
+  /*
+  int sockfd;  
+  struct addrinfo hints, *servinfo, *p;
+  struct sockaddr_in *ip_access;
+  int rv;
+
+  memset(&hints, 0, sizeof hints);
+  hints.ai_family = AF_UNSPEC; // use AF_INET6 to force IPv6
+  hints.ai_socktype = SOCK_STREAM;
+
+  if ((rv = getaddrinfo(hostname, "http", &hints, &servinfo)) != 0) {
+      fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
+      exit(1);
+  }
+
+  for(p = servinfo; p != NULL; p = p->ai_next){
+    ip_access = (struct sockaddr_in *) p->ai_addr;
+    pritnf("IP: %s\n",inet_ntoa(ip_access->sin_addr));
+  }
+
+  if (p == NULL) {
+      // looped off the end of the list with no connection
+      fprintf(stderr, "failed to connect\n");
+      exit(2);
+  }
+
+  freeaddrinfo(servinfo);
+  */
+  return 0;
 }

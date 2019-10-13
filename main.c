@@ -1,11 +1,11 @@
 
 #include "functions.h"
 
-#define BUFFER 1024
+#define BUFFER 8124
 #define DEBUG
 
 
-int main(int argc, char const *argv[]) {
+int main(int argc, char **argv) {
   int sock, msg_size, i;
   socklen_t len;
   struct sockaddr_in local, server;
@@ -45,8 +45,7 @@ int main(int argc, char const *argv[]) {
         break;
       case '?':
       default:
-        err_arguments();
-        return 1;
+        return err_arguments();
     }
   } 
   
@@ -54,23 +53,27 @@ int main(int argc, char const *argv[]) {
     return err_arguments();
   }
   
+  strcpy(whois_server, "whois.ripe.net");
+  
   memset(&server,0,sizeof(server)); // erase the server structure
-  memset(&local,0,sizeof(local));   // erase the local address structure
+  memset(&local,0,sizeof(local));   // erase local address structure
 
-   if (isip(whois_server) != 0) {
-     if((servent = gethostbyname(whois_server)) == NULL)
+   //if (isip(whois_server) != 0) {
+     if((servent = gethostbyname(whois_server)) == NULL) //NEFUNGUJE
       return error_exit(1, "gethostbyname() failed");
      
       // copy the first parameter to the server.sin_addr structure
-      memcpy(&server.sin_addr,servent->h_addr_list[0],servent->h_length); 
-   }
+      //printf("%s\n",inet_ntoa(servent->h_addr));
+      memcpy(&server.sin_addr,servent->h_addr,servent->h_length); 
+   /*}
    else{
      server.sin_addr.s_addr = inet_addr(whois_server);
-   }
+     printf("%d\n", inet_addr(whois_server));
+   }*/
    server.sin_family = AF_INET;
    server.sin_port = htons(43);
    
-   if((sock = socket(AF_INET, SOCK_STREAM, 0)) == -1) //create client Socket
+   if((sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == -1) //create client Socket
     return error_exit(1,"socket() failed");
   
   #ifdef DEBUG
@@ -85,18 +88,19 @@ int main(int argc, char const *argv[]) {
   if (connect(sock, (struct sockaddr *)&server, sizeof(server)) == -1)
     return error_exit(1,"connect() failed");
   
-  // obtain the local IP address and port using getsockname()
+  // obtain the local IP address and port using getsockname()     NEEDED ? 
+  /*
   len = sizeof(local);
   if (getsockname(sock,(struct sockaddr *) &local, &len) == -1)
     return error_exit(1,"getsockname() failed");
-    
+    */
   #ifdef DEBUG
     printf("* Client successfully connected from %s, port %d (%d) to %s, port %d (%d)\n", inet_ntoa(local.sin_addr),ntohs(local.sin_port),local.sin_port,inet_ntoa(server.sin_addr),ntohs(server.sin_port), server.sin_port);
   #endif
   
-  strcpy(buffer,uname->pw_name);  // send a login name to the server
-  strcat(buffer, "-B");
-  i = write(sock,buffer,strlen(uname->pw_name));
+  //strcpy(buffer,client);  
+  
+  i = send(sock,buffer,strlen(buffer),0);
   if (i == -1){
     return error_exit(1,"initial write() failed");
   }
@@ -135,10 +139,3 @@ int main(int argc, char const *argv[]) {
   
   return 0;
 }
-
-/*
-printf("HERE\n");
-return 0;
-#ifdef X
-#endif
-*/
