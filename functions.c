@@ -23,7 +23,7 @@ int err_arguments(){
 }
 
 int error_exit(int code, std::string str){
-  fprintf(stderr, "%s\n",str);
+  fprintf(stderr, "%s\n",str.c_str());
   return code;
 }
 

@@ -29,17 +29,14 @@ int main(int argc, char **argv) {
   while((opt = getopt(argc, argv, ":q:w:d:")) != -1){
     switch(opt){
       case 'q':
-        printf("option: %c | %s\n", opt, optarg);
         strcpy(client, optarg);
         qflag++;
         break;
       case 'w':
-        printf("option: %c | %s\n", opt, optarg);
         strcpy(whois_server, optarg);
         wflag++;
         break;
       case 'd':
-        printf("option: %c | %s\n", opt, optarg);
         strcpy(dns_server, optarg);
         dflag++;
         break;
@@ -53,7 +50,6 @@ int main(int argc, char **argv) {
     return err_arguments();
   }
   
-  strcpy(whois_server, "whois.ripe.net");
   
   memset(&server,0,sizeof(server)); // erase the server structure
   memset(&local,0,sizeof(local));   // erase local address structure
@@ -65,6 +61,13 @@ int main(int argc, char **argv) {
       // copy the first parameter to the server.sin_addr structure
       //printf("%s\n",inet_ntoa(servent->h_addr));
       memcpy(&server.sin_addr,servent->h_addr,servent->h_length); 
+      
+      if((servent = gethostbyname(client)) == NULL) //NEFUNGUJE
+       return error_exit(1, "gethostbyname() failed");
+      
+       // copy the first parameter to the server.sin_addr structure
+       //printf("%s\n",inet_ntoa(servent->h_addr));
+       memcpy(&local.sin_addr,servent->h_addr,servent->h_length); 
    /*}
    else{
      server.sin_addr.s_addr = inet_addr(whois_server);
@@ -98,9 +101,7 @@ int main(int argc, char **argv) {
     printf("* Client successfully connected from %s, port %d (%d) to %s, port %d (%d)\n", inet_ntoa(local.sin_addr),ntohs(local.sin_port),local.sin_port,inet_ntoa(server.sin_addr),ntohs(server.sin_port), server.sin_port);
   #endif
   
-  //strcpy(buffer,client);  
-  
-  i = send(sock,buffer,strlen(buffer),0);
+  i = write(sock,buffer,strlen(buffer));
   if (i == -1){
     return error_exit(1,"initial write() failed");
   }
@@ -112,21 +113,32 @@ int main(int argc, char **argv) {
   }
 
   //keep communicating with server
-  while((msg_size=read(STDIN_FILENO,buffer,BUFFER)) > 0) 
+  
+  //while((msg_size=read(STDIN_FILENO,buffer,BUFFER)) > 0) 
       // read input data from STDIN (console) until end-of-line (Enter) is pressed
       // when end-of-file (CTRL-D) is received, msg_size == 0
-  { 
+  //{ 
+  
+  strcpy(client, inet_ntoa(local.sin_addr));
+  strcat(client, "\n");
+  strcpy(buffer, client);
+  msg_size = strlen(buffer);
+  printf("BUFFER: %s\n",buffer);
+  
+  for(int j = 0; j < 2 ; j++)
+  {
     i = write(sock,buffer,msg_size);             // send data to the server
     if (i == -1)                                 // check if data was sent correctly
-      return error_exit(1,"write() failed");
+    return error_exit(1,"write() failed");
     else if (i != msg_size)
-      return error_exit(1,"write(): buffer written partially");
+    return error_exit(1,"write(): buffer written partially");
     
     if ((i = read(sock,buffer, BUFFER)) == -1)   // read the answer from the server
-      return error_exit(1,"read() failed");
+    return error_exit(1,"read() failed");
     else if (i > 0)
-      printf("%.*s",i,buffer);                   // print the answer
-  } 
+    printf("%.*s",i,buffer);                   // print the answer
+  }
+  //} 
   // reading data until end-of-file (CTRL-D)
 
   if (msg_size == -1)

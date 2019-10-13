@@ -12,3 +12,9 @@ run: $(BIN)
 					
 runip: $(BIN)
 					./$(BIN) -q 147.229.9.23 -d dns.google.com -w 193.0.6.135
+					
+runip2: $(BIN)
+					./$(BIN) -q 8.8.8.8 -d dns.google.com -w 193.0.6.135
+					
+runhyb: $(BIN)
+					./$(BIN) -q 147.229.9.23 -d dns.google.com -w whois.ripe.net
