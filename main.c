@@ -55,7 +55,7 @@ int main(int argc, char **argv) {
   memset(&local,0,sizeof(local));   // erase local address structure
 
    //if (isip(whois_server) != 0) {
-     if((servent = gethostbyname(whois_server)) == NULL) //NEFUNGUJE
+     if((servent = gethostbyname(whois_server)) == NULL) 
       return error_exit(1, "gethostbyname() failed");
      
       // copy the first parameter to the server.sin_addr structure
