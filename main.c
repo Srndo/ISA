@@ -1,8 +1,8 @@
-
+#include <regex>
 #include "functions.h"
 
 #define BUFFER 8124
-#define DEBUG
+#define NDEBUG
 
 
 int main(int argc, char **argv) {
@@ -106,11 +106,11 @@ int main(int argc, char **argv) {
     return error_exit(1,"initial write() failed");
   }
 
-  if ((i = read(sock,buffer,BUFFER)) == -1){  // read an initial string
-    return error_exit(1,"initial read() failed");
-  } else {
-    printf("%.*s\n",i,buffer);
-  }
+//  if ((i = read(sock,buffer,BUFFER)) == -1){  // read an initial string
+//    return error_exit(1,"initial read() failed");
+//  } else {
+//    printf("%.*s\n",i,buffer);
+//  }
 
   //keep communicating with server
   
@@ -123,7 +123,7 @@ int main(int argc, char **argv) {
   strcat(client, "\n");
   strcpy(buffer, client);
   msg_size = strlen(buffer);
-  printf("BUFFER: %s\n",buffer);
+  printf("=== WHOIS ===\n");
   
   for(int j = 0; j < 2 ; j++)
   {
@@ -136,7 +136,33 @@ int main(int argc, char **argv) {
     if ((i = read(sock,buffer, BUFFER)) == -1)   // read the answer from the server
     return error_exit(1,"read() failed");
     else if (i > 0)
-    printf("%.*s",i,buffer);                   // print the answer
+    {
+        char *token;
+        const char *x = "\n";
+       
+        token = strtok(buffer, x);
+        
+        while( token != NULL ) {
+            const std::regex my_regex("inetnum.*");
+            const std::regex my_regex2("netname.*");
+            const std::regex my_regex3("descr.*");
+            const std::regex my_regex4("country.*");
+            const std::regex my_regex5("admin-c.*");
+            const std::regex my_regex6("address.*");
+            const std::regex my_regex7("phone.*");
+            
+            if(std::regex_match(token, my_regex) ||
+               std::regex_match(token, my_regex2) ||
+               std::regex_match(token, my_regex3) ||
+               std::regex_match(token, my_regex4) ||
+               std::regex_match(token, my_regex5) ||
+               std::regex_match(token, my_regex6) ||
+               std::regex_match(token, my_regex7))
+               printf("%s\n", token );
+        
+            token = strtok(NULL, x);
+        }
+    }
   }
   //} 
   // reading data until end-of-file (CTRL-D)

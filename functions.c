@@ -58,3 +58,13 @@ int DnsLookup(char *hostname, char *ip){
   */
   return 0;
 }
+
+//int print_response(char *str){
+//    char c;
+//    while(
+//}
+
+//std::string get_last_word(const std::string& s) {
+//  auto index = s.find_last_of(' ');
+//  return s.substr(++index);
+//}
