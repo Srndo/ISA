@@ -10,6 +10,9 @@ $(BIN): $(SRC)
 run: $(BIN)
 					./$(BIN) -q www.fit.vutbr.cz -d dns.google.com -w whois.ripe.net
 					
+run2: $(BIN)
+					./$(BIN) -q www.fit.vutbr.cz -d dns.google.com -w whois.eu
+					
 runip: $(BIN)
 					./$(BIN) -q 147.229.9.23 -d dns.google.com -w 193.0.6.135
 					
