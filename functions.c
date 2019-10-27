@@ -11,18 +11,18 @@ int isip(const char *src) {
 }
 
 void help(){
-  printf("-q <IP|hostname>, povinný argument\n");
-  printf("-w <IP|hostname WHOIS serveru>, který bude dotazován, povinný argument\n");
-  printf("-d <IP|hostname DNS serveru>, který bude dotazován, nepovinný argument přičemž implicitně se bere 1.1.1.1\n");
+    printf("-q <IP|hostname>, povinný argument\n");
+    printf("-w <IP|hostname WHOIS serveru>, který bude dotazován, povinný argument\n");
+    printf("-d <IP|hostname DNS serveru>, který bude dotazován, nepovinný argument přičemž implicitně se bere 1.1.1.1\n");
 }
 
 int err_arguments(){
-  fprintf(stderr,"Bad usage of arguments\n");
-  help();
-  return 1;
+    fprintf(stderr,"Bad usage of arguments\n");
+    help();
+    return 1;
 }
 
 int error_exit(int code, std::string str){
-  fprintf(stderr, "%s\n",str.c_str());
-  return code;
+    fprintf(stderr, "%s\n",str.c_str());
+    return code;
 }

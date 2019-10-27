@@ -57,30 +57,30 @@ int main(int argc, char **argv) {
     int sockfd;
     struct addrinfo hints, *servinfo, *p;
     int rv;
-
+    
     memset(&hints, 0, sizeof hints);
     hints.ai_family = AF_UNSPEC; // use AF_INET6 to force IPv6
     hints.ai_socktype = SOCK_STREAM;
-
+    
     if ((rv = getaddrinfo(whois_server, "whois", &hints, &servinfo)) != 0) {
         fprintf(stderr, "Whois getaddrinfo: %s\n", gai_strerror(rv));
         return 1;
     }
-
+    
     // loop through all the results and connect to the first we can
     for(p = servinfo; p != NULL; p = p->ai_next) {
         if ((sockfd = socket(p->ai_family, p->ai_socktype,
-                p->ai_protocol)) == -1) {
+                             p->ai_protocol)) == -1) {
             perror("socket");
             continue;
         }
-
+        
         if (connect(sockfd, p->ai_addr, p->ai_addrlen) == -1) {
             perror("connect");
             close(sockfd);
             continue;
         }
-
+        
         break; // if we get here, we must have connected successfully
     }
     
@@ -92,8 +92,8 @@ int main(int argc, char **argv) {
 #ifdef DEBUG
     else
         printf("Succefull connect to server\n");
-
-
+    
+    
     char host[256];
     getnameinfo(p->ai_addr, p->ai_addrlen, host, sizeof (host), NULL, 0, NI_NUMERICHOST);
     puts(host);
@@ -103,13 +103,13 @@ int main(int argc, char **argv) {
     memset(&hints, 0, sizeof hints);
     hints.ai_family = AF_UNSPEC; // use AF_INET6 to force IPv6
     hints.ai_socktype = SOCK_STREAM;
-
+    
     if ((rv = getaddrinfo(client, NULL, &hints, &servinfo)) != 0) {
         fprintf(stderr, "Client getaddrinfo: %s\n", gai_strerror(rv));
         return 1;
     }
     
-//https://github.com/angrave/SystemProgramming/wiki/Networking,-Part-2:-Using-getaddrinfo
+    //https://github.com/angrave/SystemProgramming/wiki/Networking,-Part-2:-Using-getaddrinfo
     getnameinfo(servinfo->ai_addr, servinfo->ai_addrlen, client, sizeof (client), NULL, 0, NI_NUMERICHOST);
     strcat(client, "\r\n");
     
@@ -154,7 +154,7 @@ int main(int argc, char **argv) {
                 const std::regex my_regex8("inet6num.*");
                 const std::regex my_regex9("NetRange.*");
                 const std::regex my_regex10("NetName.*");
-
+                
                 if(std::regex_match(token, my_regex) ||
                    std::regex_match(token, my_regex2) ||
                    std::regex_match(token, my_regex3) ||
@@ -162,12 +162,12 @@ int main(int argc, char **argv) {
                    std::regex_match(token, my_regex5) ||
                    std::regex_match(token, my_regex6) ||
                    std::regex_match(token, my_regex7) ||
-                    std::regex_match(token, my_regex8) ||
-                    std::regex_match(token, my_regex9) ||
-                    std::regex_match(token, my_regex10)){
-                     printf("%s\n", token );
-                        out_flag = 1;
-                    }
+                   std::regex_match(token, my_regex8) ||
+                   std::regex_match(token, my_regex9) ||
+                   std::regex_match(token, my_regex10)){
+                    printf("%s\n", token );
+                    out_flag = 1;
+                }
                 
                 token = strtok(NULL, x);
             }
