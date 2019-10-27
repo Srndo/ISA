@@ -1,4 +1,4 @@
-SRC=main.c functions.c
+SRC=main2.c functions.c
 BIN=xsesta06
 #CC=gcc
 CC=g++
@@ -11,13 +11,16 @@ run: $(BIN)
 					./$(BIN) -q www.fit.vutbr.cz -d dns.google.com -w whois.ripe.net
 					
 run2: $(BIN)
-					./$(BIN) -q www.fit.vutbr.cz -d dns.google.com -w whois.eu
+					./$(BIN) -q www.fit.vutbr.cz -d cesnet.cz -w whois.iana.org
 					
-runip: $(BIN)
-					./$(BIN) -q 147.229.9.23 -d dns.google.com -w 193.0.6.135
+run3: $(BIN)
+					./$(BIN) -q www.fit.vutbr.cz -d dns.google.com -w whois.arin.net
 					
 runip2: $(BIN)
-					./$(BIN) -q 8.8.8.8 -d dns.google.com -w 193.0.6.135
+					./$(BIN) -q 147.229.9.23 -d dns.google.com -w whois.iana.org
 					
-runhyb: $(BIN)
+runip3: $(BIN)
+					./$(BIN) -q 147.229.9.23 -d dns.google.com -w whois.arin.net
+					
+runip: $(BIN)
 					./$(BIN) -q 147.229.9.23 -d dns.google.com -w whois.ripe.net

@@ -16,4 +16,3 @@ int isip(const char *src);
 void help();
 int err_arguments();
 int error_exit(int code, std::string str);
-//int print_response(char *str);
