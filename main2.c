@@ -1,9 +1,6 @@
-#include <regex>
 #include "functions.h"
 
-#define BUFFER 8124
-#define DEBUG
-
+#define NDEBUG
 
 int main(int argc, char **argv) {
     int sock, msg_size, i;
@@ -17,11 +14,11 @@ int main(int argc, char **argv) {
     
     int opt;
     extern char *optarg;
-    char client[100], whois_server[100], dns_server[100] = "\0";
-    int qflag = 0;
-    int wflag = 0;
-    int dflag = 0;
-    int out_flag = 0;
+    char client[100] = "\0", whois_server[100] = "\0", dns_server[100] = "\0";
+    int qflag = FALSE;
+    int wflag = FALSE;
+    int dflag = FALSE;
+    int out_flag = FALSE;
     
     if(argc < 5 || argc > 7){
         return err_arguments();
@@ -47,9 +44,31 @@ int main(int argc, char **argv) {
         }
     }
     
-    if(qflag != 1 || wflag != 1){
+    if(qflag != TRUE || wflag != TRUE){
         return err_arguments();
     }
+    
+    
+    if(dflag != FALSE){
+        printf("=== DNS ===\n");
+        char pom[100] = "\0";
+        if(client[0] == 'w'){
+            for(int i = 0, j = 0; client[i] != '\0'; i++){
+                if(client[i] == 'w')
+                    continue;
+                if(client[i] == '.' && client[i - 1] == 'w' && i <= 3)
+                    continue;
+                
+                pom[j++] = client[i];
+            }
+            resolver(pom);
+       }
+        else if(!isip(client)){
+            //todo for IP
+        }
+        else
+            resolver(client);
+   }
     
     memset(&server,0,sizeof(server)); // erase the server structure
     memset(&local,0,sizeof(local));   // erase local address structure
@@ -133,7 +152,7 @@ int main(int argc, char **argv) {
         if((i = read(sockfd, buffer, BUFFER)) == -1)
             return error_exit(1, "buffer send read() failed");
         else if(i == 0){
-            if(out_flag == 0)
+            if(out_flag == FALSE)
                 printf("No log for this ip / domain: %s on this whois server.",client );
             break;
         }
