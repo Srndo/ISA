@@ -139,6 +139,11 @@ int main(int argc, char **argv) {
     freeaddrinfo(servinfo); // all done with this structure
     
     i = 1; // initialize for while condition
+    int realloc_num = 1;
+    char *output = (char *)malloc(sizeof(char) * ALLOC_OUTPUT);
+    if(!output)
+        return error_exit(1, "INTERNAL ERROR: memory not allocated");
+    
     printf("=== WHOIS ===\n");
     while(i != 0){
         
@@ -159,7 +164,6 @@ int main(int argc, char **argv) {
         else{
             char *token;
             const char *x = "\n";
-            
             token = strtok(buffer, x);
             
             while( token != NULL ) {
@@ -184,13 +188,24 @@ int main(int argc, char **argv) {
                    std::regex_match(token, my_regex8) ||
                    std::regex_match(token, my_regex9) ||
                    std::regex_match(token, my_regex10)){
-                    printf("%s\n", token );
+                    
+                    if(strlen(token) + strlen(output) + 1 >= ALLOC_OUTPUT * realloc_num){
+                        output = (char *)realloc(output,sizeof(char) * (ALLOC_OUTPUT * ++realloc_num));
+                        if(!output)
+                            return error_exit(1, "INTERNAL ERROR: memory not reallocated");
+                    }
+                    if(strstr(output, token) == NULL){
+                        strcat(output, token);
+                        strcat(output, "\n");
+                    }
                     out_flag = 1;
                 }
-                
                 token = strtok(NULL, x);
             }
         }
     }
+    if(out_flag == TRUE)
+        print_whois(output);
+    free(output);
     return 0;
 }

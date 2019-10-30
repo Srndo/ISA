@@ -53,7 +53,7 @@ int resolver(const char *dname){
                 nType = ns_t_mx;
                 break;
         }
-            
+        
         responseLen = res_search(dname, ns_c_in, nType, (u_char *)&response, sizeof(response));
         
         if (responseLen < 0)
@@ -77,7 +77,7 @@ int resolver(const char *dname){
                 case ns_t_a:
                     struct in_addr in;
                     memcpy(&in.s_addr, ns_rr_rdata(rr), sizeof(in.s_addr));
-                    printf("A:\t%s\n", inet_ntoa(in));
+                    printf("A:\t\t%s\n", inet_ntoa(in));
                     break;
                     
                 case ns_t_aaaa:
@@ -87,7 +87,7 @@ int resolver(const char *dname){
                 case ns_t_mx:
                     ns_sprintrr(&handle, &rr, NULL, NULL, reinterpret_cast<char*> (dispbuf), sizeof (dispbuf));
                     
-                    printf("admin mail:\t%s\n", dispbuf);
+                    print_mx(dispbuf);
                     break;
                     
                 case ns_t_ptr:
@@ -96,7 +96,7 @@ int resolver(const char *dname){
                     
                 case ns_t_soa:
                     ns_sprintrr(&handle, &rr, NULL, NULL, reinterpret_cast<char*> (dispbuf), sizeof (dispbuf));
-                    
+                    printf("%s",dispbuf);
                     str.assign(dispbuf, strlen(dispbuf));
                     print_soa(str);
                     break;
@@ -115,5 +115,63 @@ void print_soa(std::string const& s){
     pom = s.substr(pos_first + 4, pos_last - 29); // + 4 positon from SOA to start identification admin, -29 from last character to end of identifacion admin
     char *cstr = new char[pom.length() + 1];
     strcpy(cstr, pom.c_str());
-    printf("SOA:\t%s\n", strtok(cstr, x));
+    printf("SOA:\t\t%s\n", strtok(cstr, x));
 }
+
+void print_mx(char *str){
+    int i = 0;
+    const char *x = " ";
+    char *token = strtok(str, x);
+    while(token != NULL){
+        if(i == 3)
+            printf("admin email:\t%s\n", token);
+        token = strtok(NULL, x);
+        i++;
+    }
+    
+}
+
+void print_regex(const std::regex rx, char *output, int *out_flag){
+    const char *x = "\n";
+    char *pom = (char *)malloc((strlen(output) + 1) * sizeof(char));
+    strcpy(pom, output);
+    char *token = strtok(pom, x);
+    while(token != NULL){
+        if(std::regex_match(token, rx)){
+            printf("%s\n", token);
+            *out_flag = TRUE;
+        }
+        token = strtok(NULL, x);
+    }
+    free(pom);
+}
+
+void print_whois(char *output){
+    const std::regex rx_inetnum("inetnum.*");
+    const std::regex rx_netname("netname.*");
+    const std::regex rx_descr("descr.*");
+    const std::regex rx_country("country.*");
+    const std::regex rx_admin("admin-c.*");
+    const std::regex rx_address("address.*");
+    const std::regex rx_phone("phone.*");
+    const std::regex rx_inet6num("inet6num.*");
+    const std::regex rx_NetRange("NetRange.*");
+    const std::regex rx_NetName("NetName.*");
+    int out_flag = FALSE;
+    
+    print_regex(rx_inetnum, output, &out_flag);
+    print_regex(rx_inet6num, output, &out_flag);
+    print_regex(rx_NetRange, output, &out_flag);
+    print_regex(rx_netname, output, &out_flag);
+    print_regex(rx_NetName, output, &out_flag);
+    print_regex(rx_country, output, &out_flag);
+    print_regex(rx_admin, output, &out_flag);
+    print_regex(rx_address, output, &out_flag);
+    print_regex(rx_phone, output, &out_flag);
+    print_regex(rx_descr, output, &out_flag);
+    
+    if(out_flag == FALSE)
+        printf("No log for this ip / domain on this whois server.\nOr regex not recognize something, try it again.\n");
+}
+
+

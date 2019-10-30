@@ -21,8 +21,7 @@
 #define BUFFER 8124
 #define TRUE 1
 #define FALSE 0
-#define ldname 256
-#define lanswer 1024
+#define ALLOC_OUTPUT 100
 
 int isip(const char *src);
 void help();
@@ -30,4 +29,6 @@ int err_arguments();
 int error_exit(int code, std::string str);
 int resolver(const char *dname);
 void print_soa(std::string const& s);
+void print_mx(char *str);
+void print_whois(char *output);
 #endif
