@@ -30,4 +30,7 @@ int error_exit(int code, std::string str);
 int resolver(const char *dname);
 void print_soa_admin_email(std::string const& s);
 void print_whois(char *output);
+void print_ns(std::string const& s);
+void printf_cname(std::string const& s, int *flag);
+void print_mx(std::string const& s);
 #endif

@@ -1,13 +1,14 @@
 #include "functions.h"
 
+// fce for chceck if string is IP address
 int isip(const char *src) {
     char buf[16];
     if (inet_pton(AF_INET, src, buf)) {
-        return 0;
+        return 4;
     } else if (inet_pton(AF_INET6, src, buf)) {
-        return 0;
+        return 6;
     }
-    return 1;
+    return 0;
 }
 
 void help(){
@@ -29,6 +30,7 @@ int error_exit(int code, std::string str){
 
 //https://stackoverflow.com/questions/51401982/dns-retrieving-host-ip-address-using-resolv-h
 int resolver(const char *dname){
+    printf("FOR: %s\n", dname);
     union {
         HEADER hdr;
         u_char buf[NS_PACKETSZ];
@@ -37,12 +39,15 @@ int resolver(const char *dname){
     int responseLen;
     res_init();
     ns_msg handle;
-    int nType = ns_t_a;
+    int nType, cname_flag = FALSE;
     char dispbuf[NS_PACKETSZ];
     std::string str;
     
-    for (int j = 0; j < 6; j++) {
+    for (int j = 0; j < 7; j++) {
         switch (j) {
+            case 0:
+                nType = ns_t_a;
+                break;
             case 1:
                 nType = ns_t_aaaa;
                 break;
@@ -57,6 +62,9 @@ int resolver(const char *dname){
                 break;
             case 5:
                 nType = ns_t_ns;
+                break;
+            case 6:
+                nType = ns_t_mx;
                 break;
         }
         
@@ -87,7 +95,11 @@ int resolver(const char *dname){
                     break;
                     
                 case ns_t_aaaa:
-                    printf("AAAA: \n");
+                    struct in6_addr in6;
+                    char ipv6[INET6_ADDRSTRLEN];
+                    memcpy(&in6.s6_addr, ns_rr_rdata(rr), sizeof(in6.s6_addr));
+                    inet_ntop(AF_INET6, &in6.s6_addr, ipv6, sizeof(ipv6));
+                    printf("AAAA:\t\t%s\n", ipv6);
                     break;
                 
                 case ns_t_soa:
@@ -99,28 +111,45 @@ int resolver(const char *dname){
                 case ns_t_ptr:
                     ns_sprintrr(&handle, &rr, NULL, NULL, reinterpret_cast<char*> (dispbuf), sizeof (dispbuf));
                     printf("PTR: \n");
-                    printf("%s",dispbuf);
+                    printf("%s\n",dispbuf);
                     break;
                     
                 case ns_t_cname:
                     ns_sprintrr(&handle, &rr, NULL, NULL, reinterpret_cast<char*> (dispbuf), sizeof (dispbuf));
-                    printf("CNAME: \n");
-                    printf("%s",dispbuf);
+                    str.assign(dispbuf, strlen(dispbuf));
+                    printf_cname(dispbuf, &cname_flag);
                     break;
                     
                 case ns_t_ns:
                     ns_sprintrr(&handle, &rr, NULL, NULL, reinterpret_cast<char*> (dispbuf), sizeof (dispbuf));
-                    printf("NS: \n");
-                    printf("%s",dispbuf);
+                    str.assign(dispbuf, strlen(dispbuf));
+                    print_ns(str);
                     break;
                     
+                case ns_t_mx:
+                    ns_sprintrr(&handle, &rr, NULL, NULL, reinterpret_cast<char*> (dispbuf), sizeof (dispbuf));
+                    str.assign(dispbuf, strlen(dispbuf));
+                    print_mx(dispbuf);
+                break;
             }
         }
     }
+    printf("\n");
     return 0;
 }
-//DONE: A, SOA, MX,
-//TODO: AAAA, CNAME, NS, PTR
+//DONE: A, AAAA, SOA, MX, NS, CNAME,
+//TODO:  PTR
+
+void printf_cname(std::string const& s, int *flag){
+    if(*flag)
+        return;
+    std::string::size_type pos_first = s.find("CNAME");
+    std::string pom = s.substr(pos_first + 6);
+    char *cstr = new char[pom.length() + 1];
+    strcpy(cstr, pom.c_str());
+    printf("CNAME:\t\t%s\n", cstr);
+    *flag = TRUE;
+}
 
 void print_soa_admin_email(std::string const& s){
     std::string::size_type pos_last = s.find("(");
@@ -128,7 +157,7 @@ void print_soa_admin_email(std::string const& s){
     std::string pom;
     
     const char *x = " ";
-    pom = s.substr(pos_first + 4, pos_last - 29); // + 4 positon from SOA to start identification admin, -29 from last character to end of identifacion admin
+    pom = s.substr(pos_first + 4, pos_last - 27); // + 4 positon from SOA to start identification admin, -27 from last character to end of identifacion admin
     char *cstr = new char[pom.length() + 1];
     strcpy(cstr, pom.c_str());
     
@@ -136,13 +165,29 @@ void print_soa_admin_email(std::string const& s){
     printf("SOA:\t\t%s\n", token);
     
     token = strtok(NULL, x);
-    for(int i = 0; i < sizeof(token); i++){ //TODO: upraviť pre prípad meno.priezvisko@doména
+    for(int i = 0; i < strlen(token); i++){ //TODO: upraviť pre prípad meno.priezvisko@doména
         if(token[i] == '.'){
             token[i] = '@';
             break;
         }
     }
     printf("admin email:\t%s\n", token);
+}
+
+void print_ns(std::string const& s){
+    std::string::size_type pos_first = s.find("NS");
+    std::string pom = s.substr(pos_first + 3);
+    char *cstr = new char[pom.length() + 1];
+    strcpy(cstr, pom.c_str());
+    printf("NS:\t\t%s\n", cstr);
+}
+
+void print_mx(std::string const& s){
+    std::string::size_type pos_first = s.find("MX");
+    std::string pom = s.substr(pos_first + 3);
+    char *cstr = new char[pom.length() + 1];
+    strcpy(cstr, pom.c_str());
+    printf("MX:\t\t%s\n", cstr);
 }
 
 void print_regex(const std::regex rx, char *output, int *out_flag){
