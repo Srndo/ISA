@@ -41,7 +41,7 @@ int resolver(const char *dname){
     char dispbuf[NS_PACKETSZ];
     std::string str;
     
-    for (int j = 0; j < 4; j++) {
+    for (int j = 0; j < 6; j++) {
         switch (j) {
             case 1:
                 nType = ns_t_aaaa;
@@ -50,7 +50,13 @@ int resolver(const char *dname){
                 nType = ns_t_soa;
                 break;
             case 3:
-                nType = ns_t_mx;
+                nType = ns_t_ptr;
+                break;
+            case 4:
+                nType = ns_t_cname;
+                break;
+            case 5:
+                nType = ns_t_ns;
                 break;
         }
         
@@ -83,30 +89,40 @@ int resolver(const char *dname){
                 case ns_t_aaaa:
                     printf("AAAA: \n");
                     break;
-                    
-                case ns_t_mx:
+                
+                case ns_t_soa:
                     ns_sprintrr(&handle, &rr, NULL, NULL, reinterpret_cast<char*> (dispbuf), sizeof (dispbuf));
-                    
-                    print_mx(dispbuf);
+                    str.assign(dispbuf, strlen(dispbuf));
+                    print_soa_admin_email(str);
                     break;
                     
                 case ns_t_ptr:
-                    printf("ns_t_ptr");
+                    ns_sprintrr(&handle, &rr, NULL, NULL, reinterpret_cast<char*> (dispbuf), sizeof (dispbuf));
+                    printf("PTR: \n");
+                    printf("%s",dispbuf);
                     break;
                     
-                case ns_t_soa:
+                case ns_t_cname:
                     ns_sprintrr(&handle, &rr, NULL, NULL, reinterpret_cast<char*> (dispbuf), sizeof (dispbuf));
+                    printf("CNAME: \n");
                     printf("%s",dispbuf);
-                    str.assign(dispbuf, strlen(dispbuf));
-                    print_soa(str);
                     break;
+                    
+                case ns_t_ns:
+                    ns_sprintrr(&handle, &rr, NULL, NULL, reinterpret_cast<char*> (dispbuf), sizeof (dispbuf));
+                    printf("NS: \n");
+                    printf("%s",dispbuf);
+                    break;
+                    
             }
         }
     }
     return 0;
 }
+//DONE: A, SOA, MX,
+//TODO: AAAA, CNAME, NS, PTR
 
-void print_soa(std::string const& s){
+void print_soa_admin_email(std::string const& s){
     std::string::size_type pos_last = s.find("(");
     std::string::size_type pos_first = s.find("SOA");
     std::string pom;
@@ -115,20 +131,18 @@ void print_soa(std::string const& s){
     pom = s.substr(pos_first + 4, pos_last - 29); // + 4 positon from SOA to start identification admin, -29 from last character to end of identifacion admin
     char *cstr = new char[pom.length() + 1];
     strcpy(cstr, pom.c_str());
-    printf("SOA:\t\t%s\n", strtok(cstr, x));
-}
-
-void print_mx(char *str){
-    int i = 0;
-    const char *x = " ";
-    char *token = strtok(str, x);
-    while(token != NULL){
-        if(i == 3)
-            printf("admin email:\t%s\n", token);
-        token = strtok(NULL, x);
-        i++;
-    }
     
+    char *token = strtok(cstr, x);
+    printf("SOA:\t\t%s\n", token);
+    
+    token = strtok(NULL, x);
+    for(int i = 0; i < sizeof(token); i++){ //TODO: upraviť pre prípad meno.priezvisko@doména
+        if(token[i] == '.'){
+            token[i] = '@';
+            break;
+        }
+    }
+    printf("admin email:\t%s\n", token);
 }
 
 void print_regex(const std::regex rx, char *output, int *out_flag){

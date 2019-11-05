@@ -28,7 +28,6 @@ void help();
 int err_arguments();
 int error_exit(int code, std::string str);
 int resolver(const char *dname);
-void print_soa(std::string const& s);
-void print_mx(char *str);
+void print_soa_admin_email(std::string const& s);
 void print_whois(char *output);
 #endif
