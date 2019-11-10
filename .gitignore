@@ -1,2 +1,4 @@
 examples/
 xsesta06
+.DS_Store
+resolv.c
