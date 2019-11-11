@@ -112,9 +112,9 @@ int resolver(const char *dname){
                     break;
                     
                 case ns_t_ptr:
-                    ns_sprintrr(&handle, &rr, NULL, NULL, reinterpret_cast<char*> (dispbuf), sizeof (dispbuf));
+//                    ns_sprintrr(&handle, &rr, NULL, NULL, reinterpret_cast<char*> (dispbuf), sizeof (dispbuf));
                     printf("PTR: \n");
-                    printf("%s\n",dispbuf);
+//                    printf("%s\n",dispbuf);
                     break;
                     
                 case ns_t_cname:

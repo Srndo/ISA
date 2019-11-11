@@ -49,9 +49,12 @@ int main(int argc, char **argv) {
         if(dflag){
             if(isip(dns_server) == 4){
                 res_init();
+                struct sockaddr_in dns;
+                dns.sin_family = AF_INET;
+                dns.sin_port = htons(53);
+                inet_pton(AF_INET, dns_server, &dns.sin_addr);
+                _res.nsaddr_list[0] = dns;
                 _res.nscount = 1;
-                _res.nsaddr_list[0].sin_family = AF_INET;
-                _res.nsaddr_list[0].sin_addr.s_addr = inet_addr(dns_server);
             }
             else if(isip(dns_server) == 6){
                 res_init();
