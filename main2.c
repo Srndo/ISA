@@ -1,16 +1,7 @@
 #include "functions.h"
 
-#define NDEBUG
-
 int main(int argc, char **argv) {
-    int sock, msg_size, i;
-    socklen_t len;
-    struct sockaddr_in local, server, dns;
     char buffer[BUFFER];
-    uid_t uid;
-    struct hostent *servent_local, *servent_server, *servent_dns;
-    struct passwd *uname;
-    
     
     int opt;
     extern char *optarg;
@@ -52,45 +43,61 @@ int main(int argc, char **argv) {
     strcpy(client_dns, client);
     
     printf("=== DNS ===\n");
-    
-    if (isip(client) == 4) { //https://cboard.cprogramming.com/c-programming/169902-getnameinfo-example-problem.html
-        resolver(client); //resolver with IP
-        struct sockaddr_in sa;
-        memset(&sa, 0, sizeof sa);
-        sa.sin_family = AF_INET;
-        inet_pton(AF_INET, client_dns, &sa.sin_addr);
+    if(isip(client) == 6)
+        error_exit(0, "getnameinfo() not supported ipv6\n");
+    else{
+        if(dflag){
+            if(isip(dns_server) == 4){
+                res_init();
+                _res.nscount = 1;
+                _res.nsaddr_list[0].sin_family = AF_INET;
+                _res.nsaddr_list[0].sin_addr.s_addr = inet_addr(dns_server);
+            }
+            else if(isip(dns_server) == 6){
+                res_init();
+                _res.nscount = 1;
+                _res.nsaddr_list[0].sin_family = AF_INET6;
+                _res.nsaddr_list[0].sin_addr.s_addr = inet_addr(dns_server);
+            }
+            else
+                printf("This program not supported IPV6 for DNS querry.\nProgram will be continued with default IP.");
+        }
         
-        int res = getnameinfo((struct sockaddr*)&sa, sizeof(sa), client_dns, sizeof(client_dns), NULL, 0, NI_NAMEREQD); //get hostname for whois
-        if(res)
-            error_exit(res, gai_strerror(res));
-    }
-    else if(isip(client) == 6)
-        return error_exit(0, "getnameinfo() not supported ipv6\n");
-    
-    if(isip(client) == 0){      //add www. if not set for query all informations
-        if(client[0] != 'w' && client[1] != 'w' && client[2] != 'w'){
-            char pom[100] = "www.";
-            strcat(pom, client);
-            strcpy(client, pom);
-        }
-    }
-    resolver(client_dns); //resolver with dname with www.
-    
-    if(client_dns[0] == 'w'){   //remove www. for query more informations (get those which not queried from before)
-        char pom[100] = "\0";
-        for(int i = 0, j = 0; client_dns[i] != '\0'; i++){
-            if(client_dns[i] == 'w')
-                continue;
-            if(client_dns[i] == '.' && client_dns[i - 1] == 'w' && i <= 3)
-                continue;
+        if (isip(client) == 4) { //https://cboard.cprogramming.com/c-programming/169902-getnameinfo-example-problem.html
+            resolver(client); //resolver with IP
+            struct sockaddr_in sa;
+            memset(&sa, 0, sizeof sa);
+            sa.sin_family = AF_INET;
+            inet_pton(AF_INET, client_dns, &sa.sin_addr);
             
-            pom[j++] = client_dns[i];
+            int res = getnameinfo((struct sockaddr*)&sa, sizeof(sa), client_dns, sizeof(client_dns), NULL, 0, NI_NAMEREQD); //get hostname for whois
+            if(res)
+                error_exit(res, gai_strerror(res));
         }
-        resolver(pom); //resolver without www.
+        
+        
+        if(isip(client) == 0){      //add www. if not set for query all informations
+            if(client[0] != 'w' && client[1] != 'w' && client[2] != 'w'){
+                char pom[100] = "www.";
+                strcat(pom, client);
+                strcpy(client, pom);
+            }
+        }
+        resolver(client_dns); //resolver with dname with www.
+        
+        if(client_dns[0] == 'w'){   //remove www. for query more informations (get those which not queried from before)
+            char pom[100] = "\0";
+            for(int i = 0, j = 0; client_dns[i] != '\0'; i++){
+                if(client_dns[i] == 'w')
+                    continue;
+                if(client_dns[i] == '.' && client_dns[i - 1] == 'w' && i <= 3)
+                    continue;
+                
+                pom[j++] = client_dns[i];
+            }
+            resolver(pom); //resolver without www.
+        }
     }
-    
-    memset(&server,0,sizeof(server)); // erase the server structure
-    memset(&local,0,sizeof(local));   // erase local address structure
     
     int sockfd;
     struct addrinfo hints, *servinfo, *p;
@@ -124,7 +131,7 @@ int main(int argc, char **argv) {
     
     if (p == NULL) // looped off the end of the list with no connection
         return error_exit(2, "failed to connect\n");
-        
+    
 #ifdef DEBUG
     else
         printf("Succefull connect to server\n");
@@ -155,7 +162,7 @@ int main(int argc, char **argv) {
     
     freeaddrinfo(servinfo); // all done with this structure
     
-    i = 1; // initialize for while condition
+    int i = 1; // initialize for while condition
     int realloc_num = 1; // if need realloc this var will be incremented for another realloc
     char *output = (char *)malloc(sizeof(char) * ALLOC_OUTPUT); // allocate memory for output
     if(!output)

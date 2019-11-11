@@ -7,7 +7,6 @@
 #include <stdio.h> 
 #include <stdlib.h>
 #include <string>
-//#include <string.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <netdb.h>
@@ -22,6 +21,7 @@
 #define TRUE 1
 #define FALSE 0
 #define ALLOC_OUTPUT 100
+#define NDEBUG
 
 int isip(const char *src);
 void help();

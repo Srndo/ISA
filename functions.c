@@ -31,6 +31,9 @@ int error_exit(int code, std::string str){
 //https://stackoverflow.com/questions/51401982/dns-retrieving-host-ip-address-using-resolv-h
 int resolver(const char *dname){
     printf("FOR: %s\n", dname);
+#ifndef NDEBUG
+    printf("DNS: %s\n", inet_ntoa(_res.nsaddr_list[0].sin_addr));
+#endif
     union {
         HEADER hdr;
         u_char buf[NS_PACKETSZ];

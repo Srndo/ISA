@@ -8,25 +8,25 @@ $(BIN): $(SRC)
 	        $(CC) $(SRC) $(CFLAGS) -lresolv -o $(BIN)
 
 run: $(BIN)
-					./$(BIN) -q www.fit.vutbr.cz -d dns.google.com -w whois.ripe.net
+					./$(BIN) -q www.fit.vutbr.cz -w whois.ripe.net
 					
 run2: $(BIN)
-					./$(BIN) -q www.mobilmania.cz -d cesnet.cz -w whois.iana.org
+					./$(BIN) -q www.mobilmania.cz -d 8.8.8.8 -w whois.iana.org
 					
 run3: $(BIN)
-					./$(BIN) -q fit.vutbr.cz -d dns.google.com -w whois.arin.net
+					./$(BIN) -q fit.vutbr.cz -d 208.67.222.222 -w whois.arin.net
 					
 run4: $(BIN)
-					./$(BIN) -q www.seznam.cz -d dns.google.com -w whois.arin.net
+					./$(BIN) -q www.seznam.cz -d 8.8.8.8 -w whois.arin.net
 					
 runip2: $(BIN)
-					./$(BIN) -q 147.229.9.23 -d dns.google.com -w whois.iana.org
+					./$(BIN) -q 147.229.9.23 -d 8.8.8.8 -w whois.iana.org
 					
 runip3: $(BIN)
-					./$(BIN) -q 147.229.9.23 -d dns.google.com -w whois.arin.net
+					./$(BIN) -q 147.229.9.23  -w whois.arin.net
 					
 runip: $(BIN)
-					./$(BIN) -q 2001:67c:1220:809::93e5:917 -d dns.google.com -w whois.ripe.net
+					./$(BIN) -q 2001:67c:1220:809::93e5:917 -d 8.8.8.8 -w whois.ripe.net
 
 runipip: $(BIN)
-					./$(BIN) -q 147.229.9.23 -d dns.google.com -w 193.0.6.135
+					./$(BIN) -q 147.229.9.23 -w 193.0.6.135
