@@ -33,4 +33,5 @@ void print_whois(char *output);
 void print_ns(std::string const& s);
 void printf_cname(std::string const& s, int *flag);
 void print_mx(std::string const& s);
+int resolver(const char *dname, int *dflag, char *dns_server);
 #endif

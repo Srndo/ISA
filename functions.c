@@ -28,19 +28,35 @@ int error_exit(int code, std::string str){
     return code;
 }
 
+void set_dns_server(int *dflag, char *dns_server){
+    if(*dflag){
+        if(isip(dns_server) == 4){
+            res_init();
+            struct sockaddr_in dns;
+            dns.sin_family = AF_INET;
+            dns.sin_port = htons(53);
+            inet_pton(AF_INET, dns_server, &dns.sin_addr);
+            _res.nsaddr_list[0] = dns;
+            _res.nscount = 1;
+        }
+    }
+}
+
 //https://stackoverflow.com/questions/51401982/dns-retrieving-host-ip-address-using-resolv-h
-int resolver(const char *dname){
+int resolver(const char *dname, int *dflag, char *dns_server){
     printf("FOR: %s\n", dname);
+    set_dns_server(dflag, dns_server);
+    
 #ifndef NDEBUG
     printf("DNS: %s\n", inet_ntoa(_res.nsaddr_list[0].sin_addr));
 #endif
+    
     union {
         HEADER hdr;
         u_char buf[NS_PACKETSZ];
     } response;
     
     int responseLen;
-    res_init();
     ns_msg handle;
     int nType, cname_flag = FALSE;
     char dispbuf[NS_PACKETSZ];
@@ -72,6 +88,7 @@ int resolver(const char *dname){
         }
         
         responseLen = res_search(dname, ns_c_in, nType, (u_char *)&response, sizeof(response));
+        set_dns_server(dflag, dns_server); //sometimes res_search set IP to default, so reset it to our DNS
         
         if (responseLen < 0)
             continue;

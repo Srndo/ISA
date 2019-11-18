@@ -43,63 +43,42 @@ int main(int argc, char **argv) {
     strcpy(client_dns, client);
     
     printf("=== DNS ===\n");
-    if(isip(client) == 6)
-        error_exit(0, "getnameinfo() not supported ipv6\n");
-    else{
-        if(dflag){
-            if(isip(dns_server) == 4){
-                res_init();
-                struct sockaddr_in dns;
-                dns.sin_family = AF_INET;
-                dns.sin_port = htons(53);
-                inet_pton(AF_INET, dns_server, &dns.sin_addr);
-                _res.nsaddr_list[0] = dns;
-                _res.nscount = 1;
-            }
-            else if(isip(dns_server) == 6){
-                res_init();
-                _res.nscount = 1;
-                _res.nsaddr_list[0].sin_family = AF_INET6;
-                _res.nsaddr_list[0].sin_addr.s_addr = inet_addr(dns_server);
-            }
-            else
-                printf("This program not supported IPV6 for DNS querry.\nProgram will be continued with default IP.");
-        }
+    //TODO: this
+    if (isip(client) == 4) { //https://cboard.cprogramming.com/c-programming/169902-getnameinfo-example-problem.html
+        resolver(client, &dflag, dns_server); //resolver with IP
+        struct sockaddr_in sa;
+        memset(&sa, 0, sizeof sa);
+        sa.sin_family = AF_INET;
+        inet_pton(AF_INET, client_dns, &sa.sin_addr);
         
-        if (isip(client) == 4) { //https://cboard.cprogramming.com/c-programming/169902-getnameinfo-example-problem.html
-            resolver(client); //resolver with IP
-            struct sockaddr_in sa;
-            memset(&sa, 0, sizeof sa);
-            sa.sin_family = AF_INET;
-            inet_pton(AF_INET, client_dns, &sa.sin_addr);
+        int res = getnameinfo((struct sockaddr*)&sa, sizeof(sa), client_dns, sizeof(client_dns), NULL, 0, NI_NAMEREQD); //get hostname for DNS 
+        if(res)
+            return error_exit(res, gai_strerror(res));
+    }
+    else if(isip(client) == 6) //TODO: NEEDED ?
+        printf("This program not supported IPV6 for DNS querry.\nProgram will be continued with default IP.\n");
+    
+    
+    if(isip(client) == 0){      //add www. if not set for query all informations
+        if(client[0] != 'w' && client[1] != 'w' && client[2] != 'w'){
+            char pom[100] = "www.";
+            strcat(pom, client);
+            strcpy(client, pom);
+        }
+    }
+    resolver(client, &dflag, dns_server); //resolv dname with www.
+    
+    if(client_dns[0] == 'w'){   //remove www. for query more informations (get those which not queried from before)
+        char pom[100] = "\0";
+        for(int i = 0, j = 0; client_dns[i] != '\0'; i++){
+            if(client_dns[i] == 'w')
+                continue;
+            if(client_dns[i] == '.' && client_dns[i - 1] == 'w' && i <= 3)
+                continue;
             
-            int res = getnameinfo((struct sockaddr*)&sa, sizeof(sa), client_dns, sizeof(client_dns), NULL, 0, NI_NAMEREQD); //get hostname for whois
-            if(res)
-                error_exit(res, gai_strerror(res));
+            pom[j++] = client_dns[i];
         }
-        
-        
-        if(isip(client) == 0){      //add www. if not set for query all informations
-            if(client[0] != 'w' && client[1] != 'w' && client[2] != 'w'){
-                char pom[100] = "www.";
-                strcat(pom, client);
-                strcpy(client, pom);
-            }
-        }
-        resolver(client_dns); //resolver with dname with www.
-        
-        if(client_dns[0] == 'w'){   //remove www. for query more informations (get those which not queried from before)
-            char pom[100] = "\0";
-            for(int i = 0, j = 0; client_dns[i] != '\0'; i++){
-                if(client_dns[i] == 'w')
-                    continue;
-                if(client_dns[i] == '.' && client_dns[i - 1] == 'w' && i <= 3)
-                    continue;
-                
-                pom[j++] = client_dns[i];
-            }
-            resolver(pom); //resolver without www.
-        }
+        resolver(pom, &dflag, dns_server); //resolver without www.
     }
     
     int sockfd;
@@ -156,7 +135,7 @@ int main(int argc, char **argv) {
     }
     
     //https://github.com/angrave/SystemProgramming/wiki/Networking,-Part-2:-Using-getaddrinfo
-    getnameinfo(servinfo->ai_addr, servinfo->ai_addrlen, client, sizeof (client), NULL, 0, NI_NUMERICHOST);
+    getnameinfo(servinfo->ai_addr, servinfo->ai_addrlen, client, sizeof (client), NULL, 0, NI_NUMERICHOST); //get client IP adres
     strcat(client, "\r\n"); // add 2 new lines for correct
     
 #ifdef DEBUG
