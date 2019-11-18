@@ -1,5 +1,5 @@
 SRC=main2.c functions.c
-BIN=xsesta06
+BIN=isa-tazatel
 #CC=gcc
 CC=g++
 CFLAGS=  -pedantic -std=c++11 -g -lm #-lpcap #99-Wall

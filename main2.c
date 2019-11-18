@@ -43,9 +43,10 @@ int main(int argc, char **argv) {
     strcpy(client_dns, client);
     
     printf("=== DNS ===\n");
-    //TODO: this
-    if (isip(client) == 4) { //https://cboard.cprogramming.com/c-programming/169902-getnameinfo-example-problem.html
-        resolver(client, &dflag, dns_server); //resolver with IP
+    if (isip(client) == 4) {
+        //ZDROJ: https://cboard.cprogramming.com/c-programming/169902-getnameinfo-example-problem.html
+        //resolver(client, &dflag, dns_server); //resolver with IP
+        //resolver not responding for PTR so IP querry not needed
         struct sockaddr_in sa;
         memset(&sa, 0, sizeof sa);
         sa.sin_family = AF_INET;
@@ -55,8 +56,8 @@ int main(int argc, char **argv) {
         if(res)
             return error_exit(res, gai_strerror(res));
     }
-    else if(isip(client) == 6) //TODO: NEEDED ?
-        printf("This program not supported IPV6 for DNS querry.\nProgram will be continued with default IP.\n");
+    else if(isip(client) == 6)
+        printf("This program not supported IPV6 for DNS querry.\nProgram will continue.\n");
     
     
     if(isip(client) == 0){      //add www. if not set for query all informations
@@ -66,7 +67,8 @@ int main(int argc, char **argv) {
             strcpy(client, pom);
         }
     }
-    resolver(client, &dflag, dns_server); //resolv dname with www.
+    if(!isip(client))
+        resolver(client, &dflag, dns_server); //resolv dname with www.
     
     if(client_dns[0] == 'w'){   //remove www. for query more informations (get those which not queried from before)
         char pom[100] = "\0";
@@ -134,7 +136,7 @@ int main(int argc, char **argv) {
         return 1;
     }
     
-    //https://github.com/angrave/SystemProgramming/wiki/Networking,-Part-2:-Using-getaddrinfo
+    //ZDROJ: https://github.com/angrave/SystemProgramming/wiki/Networking,-Part-2:-Using-getaddrinfo
     getnameinfo(servinfo->ai_addr, servinfo->ai_addrlen, client, sizeof (client), NULL, 0, NI_NUMERICHOST); //get client IP adres
     strcat(client, "\r\n"); // add 2 new lines for correct
     

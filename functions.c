@@ -42,7 +42,7 @@ void set_dns_server(int *dflag, char *dns_server){
     }
 }
 
-//https://stackoverflow.com/questions/51401982/dns-retrieving-host-ip-address-using-resolv-h
+//ZDROJ: https://stackoverflow.com/questions/51401982/dns-retrieving-host-ip-address-using-resolv-h
 int resolver(const char *dname, int *dflag, char *dns_server){
     printf("FOR: %s\n", dname);
     set_dns_server(dflag, dns_server);
